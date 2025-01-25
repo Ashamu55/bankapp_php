@@ -41,7 +41,76 @@ if ($result->num_rows > 0) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
     <style>
-        /* Add your styling here */
+          body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Dashboard Container */
+        .dashboard {
+            width: 100%;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard h2 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .dashboard p {
+            font-size: 18px;
+            color: #555;
+            margin: 10px 0;
+        }
+
+        .dashboard a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .dashboard a:hover {
+            background-color: #2980b9;
+        }
+
+        .account-info {
+            background-color: #ecf0f1;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+
+        .account-info p {
+            font-size: 16px;
+            color: #2c3e50;
+        }
+
+        .balance {
+            font-weight: bold;
+            color: #27ae60;
+            font-size: 20px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
     </style>
 </head>
 <body>
