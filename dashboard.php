@@ -1,39 +1,41 @@
 <?php
 session_start();
 
-// Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
-    // Redirect to signup page if not logged in
     header('Location: signup.html');
     exit;
 }
-
-// Include the database connection
 require_once 'Database.php';
 
-// Create a new database connection
 $database = new Database();
 $connection = $database->getConnection();
 
-// Retrieve account number from session
-$account_number = $_SESSION['account_number'];
-
-// Query to get the account balance based on the account number
-$query = "SELECT balance FROM account_numbers WHERE account_number = ?";
+$user_id = $_SESSION['user_id'];
+$query = "SELECT profile_pic FROM users WHERE id = ?";
 $stmt = $connection->prepare($query);
-$stmt->bind_param('s', $account_number);
+$stmt->bind_param('i', $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Fetch the balance
-$balance = 0; // Default balance if no result found
+$profile_pic = 'uploads/profile_pics/default.png';
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
-    $balance = $row['balance'];
+    $profile_pic = !empty($row['profile_pic']) ? $row['profile_pic'] : $profile_pic;
 }
 
-// Display the dashboard
+$query_balance = "SELECT balance FROM account_numbers WHERE user_id = ?";
+$stmt_balance = $connection->prepare($query_balance);
+$stmt_balance->bind_param('i', $user_id);
+$stmt_balance->execute();
+$result_balance = $stmt_balance->get_result();
+
+$balance = 0; 
+if ($result_balance->num_rows > 0) {
+    $row_balance = $result_balance->fetch_assoc();
+    $balance = $row_balance['balance'];
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,14 +43,13 @@ if ($result->num_rows > 0) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
     <style>
-          body {
+        body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f7fc;
             margin: 0;
             padding: 0;
         }
 
-        /* Dashboard Container */
         .dashboard {
             width: 100%;
             max-width: 600px;
@@ -57,10 +58,19 @@ if ($result->num_rows > 0) {
             background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            object-fit: cover;
+            border: 2px solid #ddd;
         }
 
         .dashboard h2 {
-            text-align: center;
             color: #333;
             font-size: 24px;
         }
@@ -87,38 +97,23 @@ if ($result->num_rows > 0) {
             background-color: #2980b9;
         }
 
-        .account-info {
-            background-color: #ecf0f1;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-
-        .account-info p {
-            font-size: 16px;
-            color: #2c3e50;
-        }
-
         .balance {
             font-weight: bold;
             color: #27ae60;
             font-size: 20px;
         }
-
-        .footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 14px;
-            color: #7f8c8d;
-        }
     </style>
 </head>
 <body>
     <div class="dashboard">
+        <a href="upload_profile_pic.php">
+            <img src="<?php echo htmlspecialchars($profile_pic); ?>" alt="Profile Picture" class="profile-pic">
+        </a>
         <h2>Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</h2>
         <p>Your email: <?php echo htmlspecialchars($_SESSION['user_email']); ?></p>
         <p>Your Account Number: <?php echo htmlspecialchars($_SESSION['account_number']); ?></p>
-        <p>Your Account Balance: $<?php echo number_format($balance, 2); ?></p> <!-- Display balance formatted as currency -->
+        <p>Your Account Balance: $<?php echo number_format($balance, 2); ?></p>
+
         <a href="logout.php">Logout</a>
     </div>
 </body>
