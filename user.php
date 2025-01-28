@@ -1,7 +1,6 @@
 <?php
 require_once 'Database.php';
 require_once 'account.php';
-// require_once 'upload_profile_pic.php';
 
 class User {
     private $connection;
