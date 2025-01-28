@@ -157,8 +157,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
         <p>Your Account Balance: $<?php echo number_format($balance, 2); ?></p>
         <a href="logout.php">Logout</a>
         <p><?php echo isset($_SESSION['msg']) ? htmlspecialchars($_SESSION['msg']) : ''; ?></p>
-        <a href="create_transfer_pin.php">Create/Update Transfer Pin</a>
+        <a href="create_transfer_pin.php">Create/Update Transfer Pin</a>  //view_transfer__history
         <a href="transfer_money.php">Transfer Money</a>
+        <a href="view_transfer_history.php">view transfer history</a>
     </div>
     <script>
         document.querySelector('.profile-pic-container').addEventListener('click', function() {

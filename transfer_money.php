@@ -73,10 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param('di', $amount, $recipient_id);
         $stmt->execute();
 
-        // Log the transaction
-        $query = "INSERT INTO transactions (sender_id, recipient_account_number, amount, description) VALUES (?, ?, ?, ?)";
+        // Log the transaction in the transfer_history table
+        $query = "INSERT INTO transfer_history (sender_id, recipient_id, amount, description) VALUES (?, ?, ?, ?)";
         $stmt = $connection->prepare($query);
-        $stmt->bind_param('isds', $sender_id, $recipient_account_number, $amount, $description);
+        $stmt->bind_param('iids', $sender_id, $recipient_id, $amount, $description);
         $stmt->execute();
 
         // Commit transaction
