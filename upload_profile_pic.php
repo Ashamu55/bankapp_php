@@ -2,46 +2,42 @@
 session_start();
 require_once 'Database.php';
 
-// Check if the user is logged in
+
 if (!isset($_SESSION['user_id'])) {
     header('Location: signup.html');
     exit;
 }
 
-$user_id = $_SESSION['user_id']; // User ID from session
+$user_id = $_SESSION['user_id']; 
 
-// Check if the upload form was submitted
+
 if (isset($_POST['upload'])) {
-    // Check if a file was uploaded
     if (!empty($_FILES['profile_pic']['name'])) {
         $file = $_FILES['profile_pic'];
 
-        // File properties
+    
         $fileName = $file['name'];
         $fileTmpName = $file['tmp_name'];
         $fileSize = $file['size'];
         $fileError = $file['error'];
         $fileType = $file['type'];
 
-        // Allowed file types
+        
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
         $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-        // Check if the uploaded file is allowed
+
         if (in_array($fileExt, $allowed)) {
             if ($fileError === 0) {
-                if ($fileSize <= 2000000) { // Limit file size to 2MB
-                    // Generate a unique file name
+                if ($fileSize <= 2000000) { 
                     $newFileName = uniqid('profile_', true) . '.' . $fileExt;
                     $uploadDir = 'uploads/profile_pics/';
                     $uploadPath = $uploadDir . $newFileName;
 
-                    // Move the file to the uploads directory
                     if (!is_dir($uploadDir)) {
                         mkdir($uploadDir, 0777, true);
                     }
                     if (move_uploaded_file($fileTmpName, $uploadPath)) {
-                        // Update the user's profile picture in the database
                         $database = new Database();
                         $connection = $database->getConnection();
                         $query = "UPDATE users SET profile_pic = ? WHERE id = ?";
@@ -49,7 +45,7 @@ if (isset($_POST['upload'])) {
                         $stmt->bind_param('si', $uploadPath, $user_id);
 
                         if ($stmt->execute()) {
-                            $_SESSION['profile_pic'] = $uploadPath; // Update the session variable
+                            $_SESSION['profile_pic'] = $uploadPath; 
                             header('Location: dashboard.php');
                             exit;
                         } else {

@@ -13,7 +13,6 @@ class Database {
         }
     }
 
-    // Get the database connection
     public function getConnection() {
         return $this->connection;
     }

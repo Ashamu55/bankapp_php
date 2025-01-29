@@ -14,12 +14,11 @@ $recipient_name = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sender_id = $_SESSION['user_id'];
-    $transfer_pin = $_POST['transfer_pin']; // The pin entered by the user
+    $transfer_pin = $_POST['transfer_pin']; 
     $recipient_account_number = $_POST['recipient_account_number'];
     $amount = (float) $_POST['amount'];
     $description = trim($_POST['description']);
 
-    // Validate transfer pin
     $query = "SELECT transfer_pin, balance FROM users INNER JOIN account_numbers ON users.id = account_numbers.user_id WHERE users.id = ?";
     $stmt = $connection->prepare($query);
     $stmt->bind_param('i', $sender_id);
@@ -27,20 +26,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = $stmt->get_result();
     $sender = $result->fetch_assoc();
 
-    if (!$sender || $sender['transfer_pin'] !== $transfer_pin) {  // Check plain text pin
+    if (!$sender || $sender['transfer_pin'] !== $transfer_pin) {
         $_SESSION['msg'] = 'Invalid transfer pin.';
         header('Location: transfer_money.php');
         exit;
     }
 
-    // Check if the sender has enough balance
     if ($sender['balance'] < $amount) {
         $_SESSION['msg'] = 'Insufficient funds.';
         header('Location: transfer_money.php');
         exit;
     }
 
-    // Verify recipient account exists
     $query = "SELECT user_id, firstname, lastname FROM account_numbers INNER JOIN users ON account_numbers.user_id = users.id WHERE account_numbers.account_number = ?";
     $stmt = $connection->prepare($query);
     $stmt->bind_param('s', $recipient_account_number);
@@ -57,29 +54,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $recipient_id = $recipient['user_id'];
     $recipient_name = $recipient['firstname'] . ' ' . $recipient['lastname'];
 
-    // Begin transaction
     $connection->begin_transaction();
 
     try {
-        // Deduct from sender's balance
         $query = "UPDATE account_numbers SET balance = balance - ? WHERE user_id = ?";
         $stmt = $connection->prepare($query);
         $stmt->bind_param('di', $amount, $sender_id);
         $stmt->execute();
 
-        // Add to recipient's balance
         $query = "UPDATE account_numbers SET balance = balance + ? WHERE user_id = ?";
         $stmt = $connection->prepare($query);
         $stmt->bind_param('di', $amount, $recipient_id);
         $stmt->execute();
 
-        // Log the transaction in the transfer_history table
         $query = "INSERT INTO transfer_history (sender_id, recipient_id, amount, description) VALUES (?, ?, ?, ?)";
         $stmt = $connection->prepare($query);
         $stmt->bind_param('iids', $sender_id, $recipient_id, $amount, $description);
         $stmt->execute();
-
-        // Commit transaction
         $connection->commit();
 
         $_SESSION['msg'] = 'Transfer successful!';
@@ -93,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<!-- HTML Form for transferring money -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         function fetchRecipientName() {
             var accountNumber = document.getElementById('recipient_account_number').value;
-            if (accountNumber.length >= 5) { // Only make the request if the account number is valid
+            if (accountNumber.length >= 5) {
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', 'fetch_recipient_name.php?account_number=' + accountNumber, true);
                 xhr.onreadystatechange = function() {
@@ -130,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label for="recipient_account_number">Recipient Account Number:</label><br>
         <input type="text" id="recipient_account_number" name="recipient_account_number" required onkeyup="fetchRecipientName()"><br><br>
 
-        <div id="recipient_name" style="font-weight: bold;"></div><br> <!-- Display recipient's name here -->
+        <div id="recipient_name" style="font-weight: bold;"></div><br>
 
         <label for="amount">Amount:</label><br>
         <input type="number" id="amount" name="amount" step="0.01" min="0.01" required><br><br>

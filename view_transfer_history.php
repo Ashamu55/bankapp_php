@@ -12,7 +12,6 @@ $connection = $database->getConnection();
 
 $user_id = $_SESSION['user_id'];
 
-// Query to fetch transfer history
 $query = "SELECT th.id, u1.firstname AS sender_firstname, u1.lastname AS sender_lastname,
           u2.firstname AS recipient_firstname, u2.lastname AS recipient_lastname, 
           th.amount, th.transfer_date, th.description

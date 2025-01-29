@@ -12,39 +12,37 @@ $connection = $database->getConnection();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
-    $transfer_pin = trim($_POST['transfer_pin']); // Trim spaces
+    $transfer_pin = trim($_POST['transfer_pin']);
 
-    // Validate the pin
     if (empty($transfer_pin)) {
         $_SESSION['msg'] = 'Transfer Pin cannot be empty.';
-        header('Location: create_transfer_pin.php'); // Redirect back to the form
+        header('Location: create_transfer_pin.php');
         exit;
     }
 
     if (!preg_match('/^\d{4}$/', $transfer_pin)) {
         $_SESSION['msg'] = 'Transfer Pin must be exactly 4 digits.';
-        header('Location: create_transfer_pin.php'); // Redirect back to the form
+        header('Location: create_transfer_pin.php');
         exit;
     }
 
-    // Update the pin in the database (store plain text pin)
     $query = "UPDATE users SET transfer_pin = ? WHERE id = ?";
     $stmt = $connection->prepare($query);
     $stmt->bind_param('si', $transfer_pin, $user_id);
 
     if ($stmt->execute()) {
         $_SESSION['msg'] = 'Transfer Pin successfully created/updated!';
-        header('Location: dashboard.php'); // Redirect to dashboard after success
+        header('Location: dashboard.php');
         exit;
     } else {
         $_SESSION['msg'] = 'An error occurred. Please try again.';
-        header('Location: create_transfer_pin.php'); // Redirect back to form on failure
+        header('Location: create_transfer_pin.php'); 
         exit;
     }
 }
 ?>
 
-<!-- HTML Form for creating a transfer pin -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
