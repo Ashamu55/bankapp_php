@@ -158,6 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
         <a href="logout.php">Logout</a>
         <p><?php echo isset($_SESSION['msg']) ? htmlspecialchars($_SESSION['msg']) : ''; ?></p>
         <a href="create_transfer_pin.php">Create/Update Transfer Pin</a>
+        <a href="add_money.php">Add money</a>
         <a href="transfer_money.php">Transfer Money</a>
         <a href="view_transfer_history.php">view transfer history</a>
     </div>
