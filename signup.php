@@ -20,9 +20,9 @@ if (isset($_POST['submit'])) {
     if ($response['status']) {
         header('Location: loginForm.php');
     } else {
-        header('Location: signup.php');
+        header('Location: signup.html');
     }
-} else {
+} else {            
     header('Location: signup.php');
 }
 ?>

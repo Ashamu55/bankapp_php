@@ -12,14 +12,17 @@ $connection = $database->getConnection();
 
 $user_id = $_SESSION['user_id'];
 
-$query = "SELECT th.id, u1.firstname AS sender_firstname, u1.lastname AS sender_lastname,
-          u2.firstname AS recipient_firstname, u2.lastname AS recipient_lastname, 
-          th.amount, th.transfer_date, th.description
-          FROM transfer_history th
-          JOIN users u1 ON th.sender_id = u1.id
-          JOIN users u2 ON th.recipient_id = u2.id
-          WHERE th.sender_id = ? OR th.recipient_id = ?
-          ORDER BY th.transfer_date DESC";
+$query = "SELECT t.id, 
+                 u1.firstname AS sender_firstname, u1.lastname AS sender_lastname, 
+                 u2.firstname AS recipient_firstname, u2.lastname AS recipient_lastname, 
+                 t.amount, t.transfer_date, t.description
+          FROM transactions t
+          JOIN users u1 ON t.sender_id = u1.id
+          JOIN account_numbers a ON t.recipient_account_number = a.account_number
+          JOIN users u2 ON a.user_id = u2.id
+          WHERE t.sender_id = ? OR a.user_id = ?
+          ORDER BY t.transfer_date DESC";
+
 $stmt = $connection->prepare($query);
 $stmt->bind_param('ii', $user_id, $user_id);
 $stmt->execute();
