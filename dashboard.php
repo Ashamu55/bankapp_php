@@ -159,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
         <p><?php echo isset($_SESSION['msg']) ? htmlspecialchars($_SESSION['msg']) : ''; ?></p>
         <a href="create_transfer_pin.php">Create/Update Transfer Pin</a> 
         <a href="add_money.php">Add money</a>
-        <a href="recharge_airtime.php">recharge Airtime</a>
+        <a href="airtime.php">recharge Airtime</a>
         <a href="change_password.php">Change password</a>
         <a href="transfer_money.php">Transfer Money</a>
         <a href="view_transfer_history.php">view transfer history</a>
