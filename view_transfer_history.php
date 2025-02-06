@@ -13,20 +13,22 @@ $connection = $database->getConnection();
 $user_id = $_SESSION['user_id'];
 
 $query = "SELECT t.id, 
-                 u1.firstname AS sender_firstname, u1.lastname AS sender_lastname, 
-                 u2.firstname AS recipient_firstname, u2.lastname AS recipient_lastname, 
-                 t.amount, t.transfer_date, t.description
-          FROM transactions t
-          JOIN users u1 ON t.sender_id = u1.id
-          JOIN account_numbers a ON t.recipient_account_number = a.account_number
-          JOIN users u2 ON a.user_id = u2.id
-          WHERE t.sender_id = ? OR a.user_id = ?
-          ORDER BY t.transfer_date DESC";
+                COALESCE(u1.firstname, 'Bank') AS sender_firstname, 
+                COALESCE(u1.lastname, '') AS sender_lastname, 
+                u2.firstname AS recipient_firstname, u2.lastname AS recipient_lastname, 
+                t.amount, t.transfer_date, t.description
+        FROM transactions t
+        LEFT JOIN users u1 ON t.sender_id = u1.id
+        JOIN account_numbers a ON t.recipient_account_number = a.account_number
+        JOIN users u2 ON a.user_id = u2.id
+        WHERE t.sender_id = ? OR a.user_id = ? OR t.sender_id IS NULL
+        ORDER BY t.transfer_date DESC";
 
 $stmt = $connection->prepare($query);
 $stmt->bind_param('ii', $user_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
+
 ?>
 
 <!DOCTYPE html>

@@ -11,14 +11,23 @@ $connection = $database->getConnection();
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch current balance from account_unmber table
-$query = "SELECT balance FROM account_numbers WHERE user_id = ?";
+// Fetch current balance from account_numbers table
+$query = "SELECT account_number, balance FROM account_numbers WHERE user_id = ?";
 $stmt = $connection->prepare($query);
 $stmt->bind_param('i', $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user_account = $result->fetch_assoc();
+$stmt->close();
+
+$account_number = $user_account['account_number'] ?? null;
 $current_balance = $user_account['balance'] ?? 0;
+
+if (!$account_number) {
+    $_SESSION['msg'] = 'Account not found!';
+    header('Location: dashboard.php');
+    exit;
+}
 
 // Fetch user's hashed transfer PIN from users table
 $query = "SELECT transfer_pin FROM users WHERE id = ?";
@@ -27,6 +36,8 @@ $stmt->bind_param('i', $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
+$stmt->close();
+
 $stored_pin = $user['transfer_pin'] ?? '';
 
 // Handle deposit request
@@ -62,30 +73,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Update balance in account_unmber table
-    $new_balance = $current_balance + $amount;
-    $query = "UPDATE account_numbers SET balance = ? WHERE user_id = ?";
-    $stmt = $connection->prepare($query);
-    $stmt->bind_param('di', $new_balance, $user_id);
-    if (!$stmt->execute()) {
+    // Start transaction to ensure atomicity
+    $connection->begin_transaction();
+
+    try {
+        // Update balance in account_numbers table
+        $new_balance = $current_balance + $amount;
+        $query = "UPDATE account_numbers SET balance = ? WHERE user_id = ?";
+        $stmt = $connection->prepare($query);
+        $stmt->bind_param('di', $new_balance, $user_id);
+        $stmt->execute();
+        $stmt->close();
+
+        // Insert deposit record in transactions table
+        $description = "Deposit";
+        $query = "INSERT INTO transactions (sender_id, recipient_account_number, amount, transfer_date, description) 
+                  VALUES (NULL, ?, ?, NOW(), ?)";
+        $stmt = $connection->prepare($query);
+        $stmt->bind_param('ids', $account_number, $amount, $description);
+        $stmt->execute();
+        $stmt->close();
+
+        // Commit the transaction
+        $connection->commit();
+
+        $_SESSION['msg'] = 'Money added successfully!';
+    } catch (Exception $e) {
+        // Rollback transaction on error
+        $connection->rollback();
         $_SESSION['msg'] = 'Failed to add money. Try again.';
-        header('Location: add_money.php');
-        exit;
     }
 
-    // Insert deposit record in transactions table
-    $description = "Deposit";
-    $query = "INSERT INTO transactions (sender_id, recipient_account_number, amount, transfer_date, description) 
-              VALUES (?, NULL, ?, NOW(), ?)";
-    $stmt = $connection->prepare($query);
-    $stmt->bind_param('ids', $user_id, $amount, $description);
-    if (!$stmt->execute()) {
-        $_SESSION['msg'] = 'Deposit recorded failed.';
-        header('Location: add_money.php');
-        exit;
-    }
-
-    $_SESSION['msg'] = 'Money added successfully!';
     header('Location: add_money.php');
     exit;
 }

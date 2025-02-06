@@ -16,7 +16,7 @@ if (isset($_POST['submit'])) {
     if ($response['status']) {
         header('Location: dashboard.php'); 
     } else {
-        header('Location: login.php'); 
+        header('Location: loginForm.php'); 
     }
 }
 ?>
